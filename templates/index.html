@@ -5,13 +5,17 @@
 <body>
     <h1>Fuel Consumption Calculator</h1>
     <form method="POST" action="/calculate_fuel">
-        <label for ="distance">Enter Distance in nm</label>
+        <label for ="distance">Enter Distance in nm: </label>
         <input type="number" name="distance" required>
-        <input type="submit" value="Calculate">
         <br>
         <br>
-        <label for ="ZFW">Enter ZFW in kg</label>
+        <label for ="ZFW">Enter ZFW in kg: </label>
         <input type="number" name="ZFW" required>
+        <br>
+        <br>
+        <label for ="altitude">Enter Cruising Altitude in feet: </label>
+        <input type="number" name="altitude" required>
+        <br>
         <input type="submit" value="Calculate">
     </form>
 </body>

@@ -10,9 +10,15 @@
     <h2>Result:</h2>
     <p>Distance needed to travel: {{ request.form['distance'] }} nm</p>
     <p>current ZFW: {{request.form['ZFW']}} kg</p>
-    <p>Fuel Required: {{ fuel_req }} kg</p>
-    
-    <!-- Add a link or button to go back to the input form -->
+    <p>Fuel Required: {{ fuel_req }} kg or {{fuel_volume}}</p>
+    <p>Fuel Price: 
+        <ul>
+            {% for place, cost in fuel_costs.items() %}
+            <li>{{ place }}: {{ cost }}</li>
+            {% endfor %}
+        </ul>
+
+    <!-- link to go back to the input form -->
     <a href="/">Calculate Again</a>
 </body>
 </html>
