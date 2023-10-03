@@ -10,10 +10,10 @@
     <h2>Result:</h2>
     <p>Distance needed to travel: {{ request.form['distance'] }} nm</p>
     <p>current ZFW: {{request.form['ZFW']}} kg</p>
-    <p>Fuel Required: {{ fuel_req }} kg or {{fuel_volume}}</p>
+    <p>Fuel Required: {{ fuel_req }} kg or {{fuel_volume}} liters</p>
     <p>Fuel Price: 
         <ul>
-            {% for place, cost in fuel_costs.items() %}
+            {% for place, cost in fuel_cost.items() %}
             <li>{{ place }}: {{ cost }}</li>
             {% endfor %}
         </ul>

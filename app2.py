@@ -1,4 +1,4 @@
-import numpy.array as array
+import numpy as np
 from flask import Flask, render_template, request
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
@@ -47,7 +47,7 @@ def calculate_fuel():
     'Chennai': fuel_chennai
     }
     
-    fuel_cost = fuel_volume * array(list(fuel_prices.values()))
+    fuel_cost = fuel_volume * np.array(list(fuel_prices.values()))
 
     # Format the fuel cost for each location
     formatted_fuel_costs = {place: f'{cost:.2f} Rupees' for place, cost in zip(fuel_prices.keys(), fuel_cost)}
