@@ -8,18 +8,13 @@ app = Flask(__name__)
 
 data = pd.read_csv('FDCA320neo.csv')
 
-X = data[['Distance', 'Altitude', 'WeightTO']]
+X = data[['Distance', 'Altitude', 'WeightTO', 'ZFW']]
 y = data['Total Fuel']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 
-default_alt = 35000
-default_TOWeight = 69968
-
 rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
 rf_model.fit(X_train, y_train)
-
-
 
 @app.route('/')
 def index():
@@ -27,9 +22,11 @@ def index():
 
 @app.route('/calculate_fuel', methods=['POST'])
 def calculate_fuel():
-    distance = float(request.form['distance'])
+    distance = int(request.form['distance'])
+    altitude = int (request.form['altitude'])
+    ZFW = int(request.form['ZFW'])
     
-    fuel_req = rf_model.predict([[distance,default_alt,default_TOWeight]])[0]
+    fuel_req = rf_model.predict([[distance,altitude, ZFW]])[0]
     
     return render_template('result.html', fuel_req=fuel_req)
 
