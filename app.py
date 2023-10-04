@@ -28,7 +28,7 @@ def calculate_fuel():
     ZFW = int(request.form['ZFW'])                      #ZFW is in kg -> kilogram
     
     try:
-        if (ZFW >= 57000 and altitude <= 39000):
+        if ((ZFW >= 44220 and ZFW <= 64300) and altitude <= 39000):
             if (distance >= 100 or distance <= 1700):
                 
                 #A320neo uses Jet A-1 type fuel, the density is approx 0.8037 kg/L
@@ -59,13 +59,13 @@ def calculate_fuel():
                 fuel_cost = fuel_volume * np.array(list(fuel_prices.values()))
 
                 # Format the fuel cost for each location
-                formatted_fuel_costs = {place: f'{cost:.0f} Rupees' for place, cost in zip(fuel_prices.keys(), fuel_cost)}
+                formatted_fuel_costs = {place: f'{cost:,.0f} Rupees' for place, cost in zip(fuel_prices.keys(), fuel_cost)}
 
                 return render_template('result.html', fuel_req=fuel_req_formatted, fuel_volume=fuel_volume_formatted, fuel_cost=formatted_fuel_costs)
             
         else:
                 raise ValueError('''
-                                 ZFW cannot be below 57000kg, 
+                                 ZFW cannot be below 44220kg or above 64300, 
                                  Altitude should be below 39000ft, 
                                  Distance should be in between 100nm to 1700nm
                                  ''')
