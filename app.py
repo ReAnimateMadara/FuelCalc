@@ -41,7 +41,9 @@ def calculate_fuel():
                 fuel_volume = fuel_req / fuel_density
                 fuel_volume_formatted = '{:.0f}'.format(fuel_volume)
                 
-                #Current fuel price given in rupees per kilo litre, taken from https://iocl.com/aviation-fuel gives price for 4 main airline hubs of india: mumbai, delhi, chennai, kolkata
+                #Current fuel price given in rupees per kilo litre, taken from https://iocl.com/aviation-fuel 
+                #gives price for 4 main airline hubs of india: mumbai, delhi, chennai, kolkata
+                
                 fuel_mumbai = 110592.31 /1000
                 fuel_delhi = 118199.17 /1000
                 fuel_kolkata = 126697.08 / 1000
