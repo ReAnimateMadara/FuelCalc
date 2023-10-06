@@ -1,21 +1,71 @@
 <!DOCTYPE html>
 <head>
-    <title>Fuel Consumption calc</title>
+    <title>Fuel Consumption Calculator</title>
+    <h1 style="text-align:center; font-family:'Courier New', Courier, monospace; font-size:35px;">Fuel Consumption Calculator</h1>
+    <script>
+        function showForm() {
+            var variant = document.getElementById("variant").value;
+            if (variant == "B738") {
+                document.getElementById("form_B737-800").style.display = "block";
+                document.getElementById("form_A320neo").style.display = "none";
+            }
+            else if (variant == "A320neo") {
+                document.getElementById("form_A320neo").style.display = "block";
+                document.getElementById("form_B737-800").style.display = "none";
+            }
+            else {
+                document.getElementById("form_A320neo").style.display = "none";
+                document.getElementById("form_B737-800").style.display = "none";
+            }
+        }
+    </script>
 </head>
 <body>
-    <h1>Fuel Consumption Calculator</h1>
-    <form method="POST" action="/calculate_fuel">
-        <label for ="distance">Enter Distance in nm: </label>
-        <input type="number" name="distance" required>
-        <br>
-        <br>
-        <label for ="ZFW">Enter ZFW in kg: </label>
-        <input type="number" name="ZFW" required>
-        <br>
-        <br>
-        <label for ="altitude">Enter Cruising Altitude in feet: </label>
-        <input type="number" name="altitude" required>
-        <br>
-        <input type="submit" value="Calculate">
-    </form>
+    <style>
+        #form{
+            padding-top: 200px;
+            text-align: center;
+        }
+    </style>
+    <h1>Choose aircraft variant</h1>
+    <label for="variant">Select aircraft</label>
+    <select id="variant" onchange="showForm()">
+        <option value="">Select</option>
+        <option value="B737-800">Boeing 737-800</option>
+        <option value="A320neo">A320-251N</option>
+    </select>
+    <div id="form">
+        <form id="form_A320neo" method="POST" action="/calculate_fueA320neo">
+            <h2>A320-251N Fuel calculation</h2>
+            <label for ="distance">Enter Distance in nm: </label>
+            <input type="number" name="distance" required>
+            <br>
+            <br>
+            <label for ="ZFW">Enter ZFW in kg: </label>
+            <input type="number" name="ZFW" required>
+            <br>
+            <br>
+            <label for ="altitude">Enter Cruising Altitude in feet: </label>
+            <input type="number" name="altitude" required>
+            <br>
+            <br>
+            <input type="submit" value="Calculate">
+
+            <form id="form_B737-800" method="POST" action="/calculate_fueA320neo">
+                <h2>B737-800 Fuel calculation</h2>
+                <label for ="distance">Enter Distance in nm: </label>
+                <input type="number" name="distance" required>
+                <br>
+                <br>
+                <label for ="ZFW">Enter ZFW in kg: </label>
+                <input type="number" name="ZFW" required>
+                <br>
+                <br>
+                <label for ="altitude">Enter Cruising Altitude in feet: </label>
+                <input type="number" name="altitude" required>
+                <br>
+                <br>
+                <input type="submit" value="Calculate">
+        </form>
+    </div>
 </body>
