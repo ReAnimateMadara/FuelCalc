@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <head>
     <title>Fuel Consumption Calculator</title>
-    <h1 style="text-align:center; font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif; font-size:35px;">Fuel Consumption Calculator</h1>
+    <h1 class="titleOnScreen">Fuel Consumption Calculator</h1>
     <style>
+        .titleOnScreen {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 40px;
+            text-align: center;
+            color:#4F478e;
+        }
         #form{
             padding-top: 100px;
             text-align: center;
@@ -11,6 +17,16 @@
         #form_A20N,
         #form_A21N {
             display: none;
+        }
+        body {
+            background-color: aqua;
+        }
+        #variant {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #variant.show {
+            opacity: 1;
         }
     </style>
     <script>
@@ -26,27 +42,36 @@
             
             // Loop to hide all aircrafts initially
             for (var aircraftID in aircrafts) {
-                document.getElementById(aircrafts[aircraftID]).style.display = "none";
+                var form = document.getElementById(aircrafts[aircraftID]);
+                form.style.opacity = 0;
+                form.style.display = "none";
             }
 
             // Loop to show the selected aircraft
             if (aircrafts.hasOwnProperty(variant)) {
-                document.getElementById(aircrafts[variant]).style.display = "block";
+                var selectForm = document.getElementById(aircrafts[variant]);
+                selectForm.style.display = "block";
+                setTimeout (function() {
+                    selectForm.style.opacity = 1;
+                }, 100);
             }
         }
     </script>
 </head>
 <body>
-    <h1>Choose aircraft variant</h1>
-    <label for="variant">Select aircraft</label>
-    <select id="variant" onchange="showForm()">
-        <option value="">Select</option>
-        <option value="B737-800">Boeing 737-800</option>
-        <option value="A320neo">A320-251N</option>
-        <option value="A321neo">A321-253N</option>
-    </select>
+    <h1 class="titleOnScreen" style="text-align:left;font-size: 32px">Choose aircraft variant</h1>
+    <label for="variant">Select from below</label>
+    <br>
+    <div class="box">
+        <select id="variant" onchange="showForm()" class="dropdown_menu">
+            <option value="">Select</option>
+            <option value="B737-800">Boeing 737-800</option>
+            <option value="A320neo">A320-251N</option>
+            <option value="A321neo">A321-253N</option>
+        </select>
+    </div>
     <div id="form">
-        <form id="form_A20N" method="POST" action="/calculate_fuelA320neo">
+        <form id="form_A20N" method="POST" action="/calculate_fuelA20N">
             <h2>A320-251N Fuel calculation</h2>
             <label for ="distance">Enter Distance in nm: </label>
             <input type="number" name="distance" required>

@@ -4,165 +4,110 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
-app = Flask(__name__)
 
-fuel_mumbai = 110592.31 / 1000
-fuel_delhi = 118199.17 / 1000
-fuel_kolkata = 126697.08 / 1000
-fuel_chennai = 122423.92 / 1000
+class AircraftModel:
+       
+    def __init__(self, csv_filename, zfw_min, zfw_max, distance_min, distance_max, altitude_max, fuel_density):
+        self.model = self.load_aircraft_data(csv_filename)
+        self.zfw_min = zfw_min
+        self.zfw_max = zfw_max
+        self.distance_min = distance_min
+        self.distance_max = distance_max
+        self.altitude_max = altitude_max
+        self.fuel_density = fuel_density
 
-fuel_prices = {
-'Mumbai': fuel_mumbai,
-'Delhi': fuel_delhi,
-'Kolkata': fuel_kolkata,
-'Chennai': fuel_chennai
+    def load_aircraft_data(self, csv_filename):
+        data = pd.read_csv(csv_filename)
+        X = data[['Distance', 'Altitude', 'ZFW']]
+        Y = data['Total Fuel']
+        X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.5, random_state=42)
+        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        model.fit(X_train, y_train)
+        return model
+
+    def calculate_fuel(self, distance, altitude, zfw):
+        if (
+            self.zfw_min <= zfw <= self.zfw_max
+            and altitude <= self.altitude_max
+            and self.distance_min <= distance <= self.distance_max
+        ):
+            fuel_req = self.model.predict([[distance, altitude, zfw]])[0]
+            fuel_volume = fuel_req / self.fuel_density
+            return fuel_req, fuel_volume, None
+        else:
+            error_message = f'''
+            ZFW cannot be below {self.zfw_min} kg or above {self.zfw_max} kg,
+            Altitude should be below {self.altitude_max} ft,
+            Distance should be between {self.distance_min} nm and {self.distance_max} nm
+            '''
+            return None, None, error_message
+
+    def calculate_fuel_cost(self, fuel_volume, fuel_prices):
+        return {place: f'{cost * fuel_volume / 1000:,.0f} Rupees' for place, cost in fuel_prices.items()}
+
+def create_app():
+    app = Flask(__name__)
+    
+    fuel_prices = {
+    'Mumbai': 110.59231,
+    'Delhi': 118.19917,
+    'Kolkata': 126.69708,
+    'Chennai': 122.42392
 }
+ 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    # Define aircraft models
+    a320neo_model = AircraftModel('FDCA320neo.csv', 44220, 64300, 100, 1700, 39100, 0.8037)
+    b738_model = AircraftModel('FDCB738.csv', 43111, 62731, 100, 2000, 41100, 0.8)
+    a321neo_model = AircraftModel('FDCA321neo.csv', 49580, 75600, 99, 2001, 39100, 0.81)
 
-@app.route('/calculate_fuelA20N', methods=['POST'])
-def calculate_fuelA20N():
-    
-    data = pd.read_csv('FDCA320neo.csv')
+    @app.route('/')
+    def index():
+        return render_template('index.html')
 
-    X = data[['Distance', 'Altitude', 'ZFW']]               #ZFW is the Zero-Fuel Weight, as in the weight of the aircraft without any fuel on board
-    y = data['Total Fuel']
+    @app.route('/calculate_fuelA20N', methods=['POST'])
+    def calculate_fuelA20N():
+        distance = int(request.form['distance'])
+        altitude = int(request.form['altitude'])
+        zfw = int(request.form['ZFW'])
+        fuel_req, fuel_volume, error_message = a320neo_model.calculate_fuel(distance, altitude, zfw)
+        if error_message:
+            return render_template('error.html', error_message=error_message)
+        formatted_fuel_costs = {place: f'{cost * fuel_volume:.0f} Rupees' for place, cost in fuel_prices.items()}
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+        return render_template('result.html', fuel_req=fuel_req, fuel_volume=fuel_volume, fuel_cost=formatted_fuel_costs)
 
-    rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf_model.fit(X_train, y_train)
-    
-    distance = int(request.form['distance'])            #Distance is in nm -> Nautical Miles
-    altitude = int (request.form['altitude'])           #Altitude is in ft -> Feet
-    ZFW = int(request.form['ZFW'])                      #ZFW is in kg -> kilogram
-    
-    try:
-        if ((ZFW >= 44220 or ZFW <= 64300) or altitude <= 39100):
-            if (distance >= 100 or distance <= 1700):
-                
-                #A320neo uses Jet A-1 type fuel, the density is approx 0.8037 kg/L
-                
-                fuel_density = 0.8037
-                
-                fuel_req = rf_model.predict([[distance,altitude, ZFW]])[0]
-                fuel_req_formatted = '{:.0f}'.format(fuel_req)
-                
-                fuel_volume = fuel_req / fuel_density
-                fuel_volume_formatted = '{:.0f}'.format(fuel_volume)
-                
-                #Current fuel price given in rupees per kilo litre, taken from https://iocl.com/aviation-fuel 
-                #gives price for 4 main airline hubs of india: mumbai, delhi, chennai, kolkata
-                
-                fuel_cost = fuel_volume * np.array(list(fuel_prices.values()))
+    @app.route('/calculate_fuelB738', methods=['POST'])
+    def calculate_fuelB738():
+        distance = int(request.form['distance'])
+        altitude = int(request.form['altitude'])
+        zfw = int(request.form['ZFW'])
+        fuel_req, fuel_volume, error_message = b738_model.calculate_fuel(distance, altitude, zfw)
+        if error_message:
+            return render_template('error.html', error_message=error_message)
+        formatted_fuel_costs = {place: f'{cost * fuel_volume:.0f} Rupees' for place, cost in fuel_prices.items()}
 
-                # Format the fuel cost for each location
-                formatted_fuel_costs = {place: f'{cost:,.0f} Rupees' for place, cost in zip(fuel_prices.keys(), fuel_cost)}
+        return render_template('result.html', fuel_req=fuel_req, fuel_volume=fuel_volume, fuel_cost=formatted_fuel_costs)
 
-                return render_template('result.html', fuel_req=fuel_req_formatted, fuel_volume=fuel_volume_formatted, fuel_cost=formatted_fuel_costs)
-            
-        else:
-                raise ValueError('''
-                                 ZFW cannot be below 44220kg or above 64300, 
-                                 Altitude should be below 39000ft, 
-                                 Distance should be in between 100nm to 1700nm
-                                 ''')
-    
-    except ValueError as e:                 #Common type of exception which can occur
-        return render_template('error.html', error_message=str(e))
-    except Exception as e:                  #Other types of exception which can occur
-        return render_template('error.html', error_message=str(e))
-
-@app.route('/calculate_fuelB738', methods=['POST'])
-def calculate_fuelB738():
-    
-    data = pd.read_csv('FDCB738.csv')
-
-    X = data[['Distance', 'Altitude', 'ZFW']]               #ZFW is the Zero-Fuel Weight, as in the weight of the aircraft without any fuel on board
-    y = data['Total Fuel']
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-
-    rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf_model.fit(X_train, y_train)
-    
-    distance = int(request.form['distance'])            #Distance is in nm -> Nautical Miles
-    altitude = int (request.form['altitude'])           #Altitude is in ft -> Feet
-    ZFW = int(request.form['ZFW'])                      #ZFW is in kg -> kilogram
-    
-    try:
-        if ((ZFW < 43111 or ZFW > 62731) or altitude < 41100):
-            if (distance >= 100 or distance <= 2000):
-                
-                fuel_density = 0.8
-                
-                fuel_req = rf_model.predict([[distance,altitude, ZFW]])[0]
-                fuel_req_formatted = '{:.0f}'.format(fuel_req)
-                
-                fuel_volume = fuel_req / fuel_density
-                fuel_volume_formatted = '{:.0f}'.format(fuel_volume)
-                
-                fuel_cost = fuel_volume * np.array(list(fuel_prices.values()))
-                formatted_fuel_costs = {place: f'{cost:,.0f} Rupees' for place, cost in zip(fuel_prices.keys(), fuel_cost)}
-
-                return render_template('result.html', fuel_req=fuel_req_formatted, fuel_volume=fuel_volume_formatted, fuel_cost=formatted_fuel_costs)
+    @app.route('/calculate_fuelA21N', methods=['POST'])
+    def calculate_fuelA21N():
+        distance = int(request.form['distance'])
+        altitude = int(request.form['altitude'])
+        zfw = int(request.form['ZFW'])
+        fuel_req, fuel_volume, error_message = a321neo_model.calculate_fuel(distance, altitude, zfw)
+        if error_message:
+            return render_template('error.html', error_message=error_message)
         
-        else:
-            raise ValueError('''
-                             ZFW cannot be below 43111kg or greater than 62731kg, 
-                             Cruising Altitude should be below 41100 feet, 
-                             Distance should be in between 100 and 2000 nm only.
-                             ''')
-    except ValueError as e:
-        return render_template('error.html', error_message=str(e))
-    except Exception as e:
-        return render_template('error.html', error_message=str(e))
-    
-@app.route("/calculate_fuelA21N", methods=['POST'])
-def calculate_fuelA21N():
-    data = pd.read_csv('FDCA321neo.csv')
+        formatted_fuel_costs = {place: f'{cost * fuel_volume:.0f} Rupees' for place, cost in fuel_prices.items()}
 
-    X = data[['Distance', 'Altitude', 'ZFW']]               #ZFW is the Zero-Fuel Weight, as in the weight of the aircraft without any fuel on board
-    y = data['Total Fuel']
+        return render_template('result.html', fuel_req=fuel_req, fuel_volume=fuel_volume, fuel_cost=formatted_fuel_costs)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-
-    rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf_model.fit(X_train, y_train)
-    
-    distance = int(request.form['distance'])            #Distance is in nm -> Nautical Miles
-    altitude = int (request.form['altitude'])           #Altitude is in ft -> Feet
-    ZFW = int(request.form['ZFW'])                      #ZFW is in kg -> kilogram
-    
-    try:
-        if((ZFW > 49580 or ZFW < 75600) or altitude < 39100):
-            if (distance >= 99 or distance <= 2001):
-                
-                fuel_density = 0.81
-                
-                fuel_req = rf_model.predict([[distance,altitude, ZFW]])[0]
-                fuel_req_formatted = '{:.0f}'.format(fuel_req)
-                
-                fuel_volume = fuel_req / fuel_density
-                fuel_volume_formatted = '{:.0f}'.format(fuel_volume)
-                
-                fuel_cost = fuel_volume * np.array(list(fuel_prices.values()))
-                formatted_fuel_costs = {place: f'{cost:,.0f} Rupees' for place, cost in zip(fuel_prices.keys(), fuel_cost)}
-
-                return render_template('result.html', fuel_req=fuel_req_formatted, fuel_volume=fuel_volume_formatted, fuel_cost=formatted_fuel_costs)
-        
-        else:
-            raise ValueError('''
-                             ZFW cannot be below 49580 or greater than 62731kg, 
-                             Cruising Altitude should be below 39100 feet, 
-                             Distance should be in between 100 and 2000 nm only.
-                             ''')
-    except ValueError as e:
-        return render_template('error.html', error_message=str(e))
-    except Exception as e:
-        return render_template('error.html', error_message=str(e))
+    return app
 
 if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True)
+            
+        
+        
+        
