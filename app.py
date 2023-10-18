@@ -32,7 +32,7 @@ class AircraftModel:
             and self.distance_min <= distance <= self.distance_max
         ):
             fuel_req = self.model.predict([[distance, altitude, zfw]])[0]
-            fuel_volume = fuel_req / self.fuel_density
+            fuel_volume = int(fuel_req / self.fuel_density)
             return fuel_req, fuel_volume, None
         else:
             error_message = f'''
