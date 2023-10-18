@@ -1,124 +1,155 @@
 <!DOCTYPE html>
+<html>
 <head>
     <title>Fuel Consumption Calculator</title>
-    <h1 class="titleOnScreen">Fuel Consumption Calculator</h1>
     <style>
-        .titleOnScreen {
+        body {
             font-family: 'Times New Roman', Times, serif;
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .titleOnScreen {
             font-size: 40px;
             text-align: center;
-            color:#4F478e;
+            color: #8173ee;
+            margin: 20px 0;
         }
-        #form{
-            padding-top: 100px;
-            text-align: center;
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #444;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
-        #form_B738,
-        #form_A20N,
-        #form_A21N {
-            display: none;
+
+        label {
+            display: block;
+            margin-top: 10px;
         }
-        body {
-            background-color: aqua;
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 7px; /* Adjust the padding to decrease the size */
+            margin: 5px 0;
+            border: 1px solid #666;
+            border-radius: 4px;
+            background-color: #555;
+            color: #fff;
         }
+
+        .dropdown_menu {
+            width: 100%;
+            padding: 7px; /* Adjust the padding to decrease the size */
+            margin: 5px 0;
+            border: 1px solid #666;
+            border-radius: 4px;
+            background-color: #555;
+            color: #fff; /* Added text color */
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #8173ee;
+        }
+
         #variant {
             opacity: 0;
             transition: opacity 0.3s ease;
         }
+
         #variant.show {
             opacity: 1;
         }
+
+        input[type="submit"] {
+            background-color: #4F478e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #333;
+        }
     </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="titleOnScreen">Fuel Consumption Calculator</h1>
+        <label for="variant">Choose an aircraft variant:</label>
+        <select id="variant" onchange="showForm()" class="dropdown_menu">
+            <option value="" style="color: #000;">Select</option> <!-- Added text color for options -->
+            <option value="B737-800">Boeing 737-800</option>
+            <option value="A320neo">A320-251N</option>
+            <option value="A321neo">A321-253N</option>
+        </select>
+
+        <div id="form">
+            <form id="form_A20N" method="POST" action="/calculate_fuelA20N">
+                <h2>A320-251N Fuel calculation</h2>
+                <label for="distance">Enter Distance in nm:</label>
+                <input type="number" name="distance" required>
+                <label for="ZFW">Enter ZFW in kg:</label>
+                <input type="number" name="ZFW" required>
+                <label for="altitude">Enter Cruising Altitude in feet:</label>
+                <input type="number" name="altitude" required>
+                <input type="submit" value="Calculate">
+            </form>
+            <form id="form_B738" method="POST" action="/calculate_fuelB738">
+                <h2>B737-800 Fuel calculation</h2>
+                <label for="distance">Enter Distance in nm:</label>
+                <input type="number" name="distance" required>
+                <label for="ZFW">Enter ZFW in kg:</label>
+                <input type="number" name="ZFW" required>
+                <label for="altitude">Enter Cruising Altitude in feet:</label>
+                <input type="number" name = "altitude" required>
+                <input type="submit" value="Calculate">
+            </form>
+            <form id="form_A21N" method="POST" action="/calculate_fuelA21N">
+                <h2>A321-253N Fuel calculation</h2>
+                <label for="distance">Enter Distance in nm:</label>
+                <input type="number" name="distance" required>
+                <label for="ZFW">Enter ZFW in kg:</label>
+                <input type="number" name="ZFW" required>
+                <label for="altitude">Enter Cruising Altitude in feet:</label>
+                <input type="number" name="altitude" required>
+                <input type="submit" value="Calculate">
+            </form>
+        </div>
+    </div>
+
     <script>
         function showForm() {
             var variant = document.getElementById("variant").value;
-            
-            // Object for mapping aircrafts to their forms id
+
             var aircrafts = {
                 "B737-800": "form_B738",
                 "A320neo": "form_A20N",
                 "A321neo": "form_A21N"
             }
-            
-            // Loop to hide all aircrafts initially
+
             for (var aircraftID in aircrafts) {
                 var form = document.getElementById(aircrafts[aircraftID]);
                 form.style.opacity = 0;
                 form.style.display = "none";
             }
 
-            // Loop to show the selected aircraft
             if (aircrafts.hasOwnProperty(variant)) {
                 var selectForm = document.getElementById(aircrafts[variant]);
                 selectForm.style.display = "block";
-                setTimeout (function() {
+                setTimeout(function () {
                     selectForm.style.opacity = 1;
                 }, 100);
             }
         }
     </script>
-</head>
-<body>
-    <h1 class="titleOnScreen" style="text-align:left;font-size: 32px">Choose aircraft variant</h1>
-    <label for="variant">Select from below</label>
-    <br>
-    <div class="box">
-        <select id="variant" onchange="showForm()" class="dropdown_menu">
-            <option value="">Select</option>
-            <option value="B737-800">Boeing 737-800</option>
-            <option value="A320neo">A320-251N</option>
-            <option value="A321neo">A321-253N</option>
-        </select>
-    </div>
-    <div id="form">
-        <form id="form_A20N" method="POST" action="/calculate_fuelA20N">
-            <h2>A320-251N Fuel calculation</h2>
-            <label for ="distance">Enter Distance in nm: </label>
-            <input type="number" name="distance" required>
-            <br>
-            <br>
-            <label for ="ZFW">Enter ZFW in kg: </label>
-            <input type="number" name="ZFW" required>
-            <br>
-            <br>
-            <label for ="altitude">Enter Cruising Altitude in feet: </label>
-            <input type="number" name="altitude" required>
-            <br>
-            <br>
-            <input type="submit" value="Calculate">
-        </form>
-        <form id="form_B738" method="POST" action="/calculate_fuelB738">
-            <h2>B737-800 Fuel calculation</h2>
-            <label for ="distance">Enter Distance in nm: </label>
-            <input type="number" name="distance" required>
-            <br>
-            <br>
-            <label for ="ZFW">Enter ZFW in kg: </label>
-            <input type="number" name="ZFW" required>
-            <br>
-            <br>
-            <label for ="altitude">Enter Cruising Altitude in feet: </label>
-            <input type="number" name="altitude" required>
-            <br>
-            <br>
-            <input type="submit" value="Calculate">
-        </form>
-        <form id="form_A21N" method="POST" action="/calculate_fuelA21N">
-            <h2>A321-253N Fuel calculation</h2>
-            <label for ="distance">Enter Distance in nm: </label>
-            <input type="number" name="distance" required>
-            <br>
-            <br>
-            <label for ="ZFW">Enter ZFW in kg: </label>
-            <input type="number" name="ZFW" required>
-            <br>
-            <br>
-            <label for ="altitude">Enter Cruising Altitude in feet: </label>
-            <input type="number" name="altitude" required>
-            <br>
-            <br>
-            <input type="submit" value="Calculate">
-        </form>
-    </div>
 </body>
 </html>
