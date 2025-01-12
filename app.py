@@ -6,11 +6,9 @@ try:
     import subprocess
     import sys
     import easygui
-
-    # List of required libraries
+    
     required_libraries = ['pandas', 'scikit-learn', 'flask', 'easygui']
 
-    # Check and install missing libraries
     missing_libraries = [lib for lib in required_libraries if lib not in sys.modules]
 
     if missing_libraries:
