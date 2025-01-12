@@ -11,5 +11,5 @@ Kolkata
 Chennai
 **
 Fuel price data was taken from https://iocl.com/aviation-fuel
-In the calculation, it uses the Altitude, ZFW, Flight plan distance as the 3 independant variables
+In the calculation, it uses the Altitude, ZFW (Zero Fuel Weight of the acft), Flight plan distance as the 3 independant variables
 The dependant variable is Fuel price
